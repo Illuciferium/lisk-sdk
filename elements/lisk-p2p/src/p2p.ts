@@ -108,6 +108,7 @@ export const EVENT_NEW_PEER = 'newPeer';
 
 export const NODE_HOST_IP = '0.0.0.0';
 export const DEFAULT_DISCOVERY_INTERVAL = 30000;
+export const DEFAULT_POPULATOR_INTERVAL = 10000;
 
 const BASE_10_RADIX = 10;
 
@@ -124,6 +125,8 @@ export class P2P extends EventEmitter {
 	private readonly _triedPeers: Map<string, P2PDiscoveredPeerInfo>;
 	private readonly _discoveryInterval: number;
 	private _discoveryIntervalId: NodeJS.Timer | undefined;
+	private readonly _populatorInterval: number;
+	private _populatorIntervalId: NodeJS.Timer | undefined;
 
 	private _nodeInfo: P2PNodeInfo;
 	private readonly _peerPool: PeerPool;
@@ -307,6 +310,10 @@ export class P2P extends EventEmitter {
 		this._discoveryInterval = config.discoveryInterval
 			? config.discoveryInterval
 			: DEFAULT_DISCOVERY_INTERVAL;
+
+		this._populatorInterval = config.populatorInterval
+			? config.populatorInterval
+			: DEFAULT_POPULATOR_INTERVAL;
 
 		this._peerHandshakeCheck = config.peerHandshakeCheck
 			? config.peerHandshakeCheck
@@ -561,8 +568,6 @@ export class P2P extends EventEmitter {
 				this._newPeers.set(peerId, peerInfo);
 			}
 		});
-
-		this._peerPool.selectPeersAndConnect([...this._newPeers.values()]);
 	}
 
 	private async _startDiscovery(
@@ -583,6 +588,24 @@ export class P2P extends EventEmitter {
 			throw new Error('Discovery is not running');
 		}
 		clearInterval(this._discoveryIntervalId);
+	}
+
+	private async _startPopulator(): Promise<void> {
+		if (this._populatorIntervalId) {
+			throw new Error('Populator is already running');
+		}
+		this._populatorIntervalId = setInterval(async () => {
+			this._peerPool.selectPeersAndConnect([...this._newPeers.values()]);
+		}, this._populatorInterval);
+
+		this._peerPool.selectPeersAndConnect([...this._newPeers.values()]);
+	}
+
+	private _stopPopulator(): void {
+		if (!this._populatorIntervalId) {
+			throw new Error('Populator is not running');
+		}
+		clearInterval(this._populatorIntervalId);
 	}
 
 	private async _fetchSeedPeerStatus(
@@ -655,8 +678,8 @@ export class P2P extends EventEmitter {
 				this._triedPeers.set(peerId, seedInfo);
 			}
 		});
-
 		await this._startDiscovery(seedPeerInfos);
+		await this._startPopulator();
 	}
 
 	public async stop(): Promise<void> {
@@ -664,6 +687,7 @@ export class P2P extends EventEmitter {
 			throw new Error('Cannot stop the node because it is not active');
 		}
 		this._stopDiscovery();
+		this._stopPopulator();
 		this._peerPool.removeAllPeers();
 		await this._stopPeerServer();
 	}

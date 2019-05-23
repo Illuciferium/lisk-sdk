@@ -52,6 +52,9 @@ const defaultConfig = {
 		discoveryInterval: {
 			type: 'integer',
 		},
+		populatorInterval: {
+			type: 'integer',
+		},
 		blacklistedPeers: {
 			type: 'array',
 			items: {
@@ -74,6 +77,7 @@ const defaultConfig = {
 		wsPort: 5000,
 		address: '0.0.0.0',
 		discoveryInterval: 30000,
+		populatorInterval: 10000,
 		seedPeers: [],
 		blacklistedPeers: [],
 		ackTimeout: 20000,
