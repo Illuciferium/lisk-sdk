@@ -590,11 +590,11 @@ export class P2P extends EventEmitter {
 		clearInterval(this._discoveryIntervalId);
 	}
 
-	private async _startPopulator(): Promise<void> {
+	private _startPopulator(): void {
 		if (this._populatorIntervalId) {
 			throw new Error('Populator is already running');
 		}
-		this._populatorIntervalId = setInterval(async () => {
+		this._populatorIntervalId = setInterval(() => {
 			this._peerPool.triggerPopulator([...this._newPeers.values()]);
 		}, this._populatorInterval);
 
@@ -679,7 +679,7 @@ export class P2P extends EventEmitter {
 			}
 		});
 		await this._startDiscovery(seedPeerInfos);
-		await this._startPopulator();
+		this._startPopulator();
 	}
 
 	public async stop(): Promise<void> {
