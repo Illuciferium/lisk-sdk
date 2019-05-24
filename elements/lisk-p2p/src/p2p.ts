@@ -111,6 +111,7 @@ export const DEFAULT_DISCOVERY_INTERVAL = 30000;
 export const DEFAULT_POPULATOR_INTERVAL = 10000;
 
 const BASE_10_RADIX = 10;
+const MAX_OUTBOUND_CONNECTIONS = 20;
 
 const selectRandomPeerSample = (
 	peerList: ReadonlyArray<P2PDiscoveredPeerInfo>,
@@ -291,6 +292,9 @@ export class P2P extends EventEmitter {
 			peerSelectionForConnection: config.peerSelectionForConnection
 				? config.peerSelectionForConnection
 				: selectForConnection,
+			maxOutboundConnections: config.maxOutboundConnections
+				? config.maxOutboundConnections
+				: MAX_OUTBOUND_CONNECTIONS,
 		});
 
 		this._bindHandlersToPeerPool(this._peerPool);

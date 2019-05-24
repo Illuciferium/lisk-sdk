@@ -71,6 +71,9 @@ const defaultConfig = {
 		ackTimeout: {
 			type: 'integer',
 		},
+		maxOutboundConnections: {
+			type: 'integer',
+		},
 	},
 	required: ['wsPort', 'seedPeers'],
 	default: {
@@ -83,6 +86,7 @@ const defaultConfig = {
 		ackTimeout: 20000,
 		connectTimeout: 5000,
 		wsEngine: 'ws',
+		maxOutboundConnections: 20,
 	},
 };
 
